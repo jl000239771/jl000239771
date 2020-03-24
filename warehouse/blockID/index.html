@@ -1,0 +1,107 @@
+<HTML>
+
+<head>
+  <title>JesseLevine.net</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+<p style="text-align: center; font-size: 38;"><em>jesselevine.net</em></span></p>
+<p style="text-align: center;"><em></em></span></p>
+
+<hr>
+
+<p style="text-align: center;"></p>
+<p>Img ID</p>
+<table align="center" border="1">
+  <tbody>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+
+<style>
+  .container {
+    display: inline-block;
+  }
+
+  table {
+    background: url("bear.jpg") no-repeat center / cover;
+    border-collapse: collapse;
+  }
+
+  td {
+    padding: 32px;
+    background-color: black;
+    transition: background-color 666ms linear;
+  }
+</style>
+
+<script>
+  function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+
+  const td = document.querySelectorAll('td');
+  var tds = Array.from(td);
+  tds = shuffle(tds);
+  console.log(tds);
+  (function reveal(i) {
+    if (i === tds.length) {
+      return;
+    } else {
+      setTimeout(() => {
+        tds[i].style.backgroundColor = 'transparent';
+        reveal(++i);
+      }, 50);
+    }
+  })(0);
+</script>
