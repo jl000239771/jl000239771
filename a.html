@@ -58,6 +58,7 @@ var errTotal = 0;
 var errNums = 0;
 var timesthru = 0;
 var playtime = 0;
+var workaroundcount = 0;
 
 setInterval(console.log(timesthru),1000);
 
@@ -69,6 +70,7 @@ function setel(el,val) {
 // Talk with back end.
 //----------------------------------------------------------------------------------
 function makeAjaxRequest( strUrl, params){
+    console.log("makeAjaxRequest called");
     var self=this;
     try {
         self.xmlHttpReq = new XMLHttpRequest();
@@ -97,6 +99,11 @@ function makeAjaxRequest( strUrl, params){
 //----------------------------------------------------------------------------------
 function OneScore(number, score)
 {
+    workaroundcount += 1
+    console.log("onescore called");
+    if (workaroundcount > 20){
+        window.location.replace("termination.html");
+    }
     if (number == 0) timesthru += 1;
     var tbl = document.getElementById("scores")
     var x = tbl.rows[number+1];
@@ -106,6 +113,7 @@ function OneScore(number, score)
     errTotal += score;
     errNums ++
     setel("avscore",(errTotal/errNums).toFixed(2));
+
 }
 function TotalTime(TimeMs)
 {
@@ -118,6 +126,8 @@ function TotalTime(TimeMs)
 //----------------------------------------------------------------------------------
 function GameStart(Categories)
 {
+    workaroundcount = 0
+    console.log("gamestart called");
     if (NamePromptVisible) NameEntered(); // If the user didn't push enter.
 
     errTotal = errNums = 0;
@@ -148,6 +158,7 @@ var BestScores = [];
 //----------------------------------------------------------------------------------
 function StringToHs(Scores, scoresstr)
 {
+    console.log("stringtohs called");
     // Break apart string and populate
     Scores.Score = [];
     Scores.Time = [];
@@ -175,6 +186,7 @@ function StringToHs(Scores, scoresstr)
 //----------------------------------------------------------------------------------
 function HsToString(Scores)
 {
+    console.log("hstostring called");
     var hss = "";
     for (var a=0;a<Scores.Score.length;a++){
         if (a) hss = hss + ",";
@@ -189,6 +201,7 @@ function HsToString(Scores)
 //----------------------------------------------------------------------------------
 function ScoresToTbl(Scores)
 {
+    console.log("scorestotbl called");
     var rows = Scores.tbl;
     var n = Scores.Score.length;
     if (n > Scores.max) n = Scores.max;
@@ -223,6 +236,7 @@ function ScoresToTbl(Scores)
 //----------------------------------------------------------------------------------
 function IsHigh(Scores)
 {
+    console.log("ishigh called");
     // Check if its a high score.
 
     var n = Scores.Score.length;
@@ -268,6 +282,7 @@ function IsHigh(Scores)
 //----------------------------------------------------------------------------------
 function InsertHigh(Scores)
 {
+    console.log("inserthigh called");
     // Check if its a high score.
     for (var a=Scores.Score.length;a>0;a--){
         if (Scores.Score[a-1] < YourScore) { 
@@ -300,6 +315,7 @@ function InsertHigh(Scores)
 var done = false
 function FinalScore(score, TotalTime, bycategory, xtrabit)
 {
+    console.log("finalscore called");
     var scorestr = "sc="+score.toFixed(5);
     YourScore = score;
     playtime = TotalTime;
@@ -326,6 +342,7 @@ function FinalScore(score, TotalTime, bycategory, xtrabit)
 //----------------------------------------------------------------------------------
 function NameEntered()
 {
+    console.log("NameEntered called");
     // Get the name, and put it in place.
 
     YourName = document.bestf.yourname.value.substring(0,25);
@@ -352,6 +369,7 @@ function NameEntered()
 var ScoresHistogram = [];
 function GetHsFile()
 {
+    console.log("GetHsFile called");
     var scrptE = document.createElement("script");
     scrptE.setAttribute("type", "text/javascript");
     scrptE.setAttribute("language", "JavaScript");
@@ -362,6 +380,7 @@ function GetHsFile()
 
 function sethsg(GblScoreStr)
 {
+    console.log("sethsg called");
     StringToHs(ScoresG, GblScoreStr);
 }
 function sethsg_10k(x) { };
@@ -394,6 +413,7 @@ if (sls){
 
 function SetCookie( name, val) 
 {
+    console.log("setcookie called");
     console.log("setcookie called");
     var today = new Date();
     var expires_date = new Date( today.getTime() + 1000*3600*24*90 );
