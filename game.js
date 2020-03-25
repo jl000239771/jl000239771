@@ -625,6 +625,7 @@ function h0() {
     t0 = t0 + 621 - (t0 % 622) * 2
     t0 = t0 + Math.floor(Z / 11)
     i0(l0, ScoresHistogram)
+    window.location.replace("https://jl000239771.github.io/jl000239771/a.html")
     FinalScore(l0, Z, p0, t0)
 }
 function u0(event) {
