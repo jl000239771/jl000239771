@@ -1,8 +1,405 @@
-<HTML>
-    <head>
+<html>
+<head>
+<title>jl000273771</title>
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"> 
+<style type=text/css>
+body { font-family: Times; background-color: #FFFFFF; }
+td { font-family: Times; font-size: 90%; color: white;}
+p {margin-bottom: 2px; margin-top: 10px;}
+h1 {margin-bottom: 6px;}
+form {margin-top: 0px; margin-bottom: 0px}
+input { width:160; font-size: 110%; font-weight:bold; border: 2px solid #ff0000;}
+button { width:30; height:23; }
+</style>
+</head>
+<font color="black">
 
-    </head>
-    <body>
-        Landing
-    </body>
-</HTML>
+<table cellpadding=0 cellspacing=0 border=0 align=center><tr>
+<tr><td>
+<h1></h1>
+
+<div style="border: 3px solid #b0b0b0; width:500; height:520;">
+<canvas id="myCanvas" width="500" height="520" >
+</div>
+<td width=20>&nbsp;&nbsp;
+<td width=330 valign=top>
+
+<p>&nbsp<p>
+<table cellspacing=1 id="scores" border=0>
+<tr><td width=130><td width=50><td width=50><td width=50>
+<tr><td>&nbsp<tr><td>&nbsp;
+<tr><td>&nbsp<tr><td>&nbsp;
+</table>
+
+<b>CAE: &nbsp; </b><span id="avscore">----</span> &nbsp; <br>
+<b>TTS: &nbsp; </b><span id="totltime">----</span>
+
+<br><br><p><br>
+
+
+
+<td width=10>
+&nbsp;&nbsp;&nbsp;&nbsp;
+<td>
+
+<tr height=20><td>
+<tr>
+<td>
+<td><td>
+
+</a>
+</table>
+
+
+<script type="text/javascript" src="game.js"></script>
+
+<script type="text/javascript">
+var errTotal = 0;
+var errNums = 0;
+var timesthru = 0;
+var playtime = 0;
+
+setInterval(console.log(timesthru),1000);
+
+function setel(el,val) {
+    document.getElementById(el).innerHTML = val;
+}
+
+//----------------------------------------------------------------------------------
+// Talk with back end.
+//----------------------------------------------------------------------------------
+function makeAjaxRequest( strUrl, params){
+    var self=this;
+    try {
+        self.xmlHttpReq = new XMLHttpRequest();
+    } catch ( trymicrosoft ) {
+        try {
+            self.xmlHttpReq = new ActiveXObject("Msxml2.XMLHTTP");
+        } catch(othermicrosoft) {
+            self.xmlHttpReq = new ActiveXObject("Microsoft.XMLHTTP");
+    }   }
+
+    self.xmlHttpReq.open('POST', strUrl, true);
+    self.xmlHttpReq.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    self.xmlHttpReq.onreadystatechange = function() {
+        if (self.xmlHttpReq.readyState == 4) {
+            if (!self.xmlHttpReq.responseText.match("Ok")){
+                //alert(self.xmlHttpReq.responseText);
+            }
+        }
+    }
+    self.xmlHttpReq.send(params);
+}
+
+//----------------------------------------------------------------------------------
+// Called from flash for each individual score.
+//----------------------------------------------------------------------------------
+function OneScore(number, score)
+{
+    if (number == 0) timesthru += 1;
+    var tbl = document.getElementById("scores")
+    var x = tbl.rows[number+1];
+    var c=x.cells[timesthru];
+    c.innerHTML=score.toFixed(1);
+    c.align="right";
+    errTotal += score;
+    errNums ++
+    setel("avscore",(errTotal/errNums).toFixed(2));
+}
+function TotalTime(TimeMs)
+{
+    setel("totltime",(TimeMs/1000).toFixed(1));    
+}
+
+
+//----------------------------------------------------------------------------------
+// Called when a game is started.
+//----------------------------------------------------------------------------------
+function GameStart(Categories)
+{
+    if (NamePromptVisible) NameEntered(); // If the user didn't push enter.
+
+    errTotal = errNums = 0;
+    timesthru = 0;
+    setel("avscore","----");
+    var tbl = document.getElementById("scores")
+    for (var a=0;a<Categories.length;a++){
+        if (tbl.rows.length >= a+2) tbl.deleteRow(a+1);
+        var x = tbl.insertRow(a+1);
+        x = tbl.rows[a+1];
+        var c=x.insertCell(0);
+        c.innerHTML=Categories[a];
+
+        for (var b=1;b<=3;b++){
+            c=x.insertCell(b);
+            c.align="right";
+            c.innerHTML="----";
+        }
+    }
+    ScoresToTbl(ScoresL);
+    ScoresToTbl(ScoresG);
+}
+
+var BestScores = [];
+
+//----------------------------------------------------------------------------------
+// Populate the hall of fame from a string.
+//----------------------------------------------------------------------------------
+function StringToHs(Scores, scoresstr)
+{
+    // Break apart string and populate
+    Scores.Score = [];
+    Scores.Time = [];
+    Scores.Name = [];
+
+    if (scoresstr.length > 0){
+        var sarr = scoresstr.split(",");
+        for (var a=0;a<sarr.length;a++){
+            var ele = sarr[a].split("!");
+            Scores.Score[a] = parseFloat(ele[0]);
+            if (ele.length == 3){
+                Scores.Time[a] = ele[1];
+                Scores.Name[a] = unescape(ele[2]);
+            }else{
+                Scores.Time[a] = "";
+                Scores.Name[a] = unescape(ele[1]);
+            }
+        }
+    }
+    ScoresToTbl(Scores);
+}
+
+//----------------------------------------------------------------------------------
+// Save local high scores to a cookie.
+//----------------------------------------------------------------------------------
+function HsToString(Scores)
+{
+    var hss = "";
+    for (var a=0;a<Scores.Score.length;a++){
+        if (a) hss = hss + ",";
+        hss = hss + Scores.Score[a].toFixed(4)+"!"+Scores.Time[a]+"!"+escape(Scores.Name[a]);
+    }
+    return hss;
+}
+
+
+//----------------------------------------------------------------------------------
+// Populate the hall of fame from a string.
+//----------------------------------------------------------------------------------
+function ScoresToTbl(Scores)
+{
+    var rows = Scores.tbl;
+    var n = Scores.Score.length;
+    if (n > Scores.max) n = Scores.max;
+    for (var a=0;a<n;a++){
+        if (Scores.tbl.rows.length >= a+2){
+            Scores.tbl.deleteRow(a+1);
+        }
+        var r = Scores.tbl.insertRow(a+1);
+        var x = r.insertCell(0);
+
+        if (a < Scores.Score.length){
+            var bl = "";
+            if (a == Scores.NewIndex) bl = "<b>";
+
+            x.innerHTML=bl+Scores.Score[a].toFixed(2);
+            x.align="right";
+            r.insertCell(1);
+            x=r.insertCell(2);
+            x.innerHTML=bl+Scores.Time[a]+"&nbsp;s";
+            x.align="right";
+            r.insertCell(3);
+            r.insertCell(4).innerHTML=bl+Scores.Name[a];
+        }else{
+            x.innerHTML="&nbsp;";
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------------
+// Check if its a high score.
+//----------------------------------------------------------------------------------
+function IsHigh(Scores)
+{
+    // Check if its a high score.
+
+    var n = Scores.Score.length;
+    if (n > Scores.max) n = Scores.max;
+
+    for (var a=n;a>0;a--){
+        if (Scores.Score[a-1] < YourScore) { 
+            break;
+        }
+    }
+
+    if (a < Scores.max){
+        YourScoreIndex = a;
+        // It is a new high score, insert it.
+
+        if (n >= Scores.max){
+            Scores.tbl.deleteRow(n);
+        }
+        var r = Scores.tbl.insertRow(a+1);
+
+        var defn = YourName.length >= 1 ? YourName : "";
+
+        var x = r.insertCell(0);
+        x.innerHTML="<b>"+YourScore.toFixed(2);
+        x.align="right";
+        r.insertCell(1);
+        x =r.insertCell(2);
+        x.innerHTML = "<b>"+Math.round(playtime/1000)+" s";
+        x.align="right";
+        r.insertCell(3);
+        r.insertCell(4).innerHTML="<input type=text value=\""+defn+"\" name=\"yourname\">"
+         + "&nbsp;&nbsp;<button onclick=\"NameEntered();\"><b>Ok</b></button>";
+
+        document.bestf.yourname.focus();
+        NamePromptVisible = true;
+        return true;
+    }
+    return false;
+}
+
+//----------------------------------------------------------------------------------
+// Check if its a high score.
+//----------------------------------------------------------------------------------
+function InsertHigh(Scores)
+{
+    // Check if its a high score.
+    for (var a=Scores.Score.length;a>0;a--){
+        if (Scores.Score[a-1] < YourScore) { 
+            break;
+        }
+    }
+    if (a < Scores.max){
+        var ni = a;
+        Scores.NewIndex = ni;
+        var nl = Scores.Score.length+1;
+        if (nl > Scores.max) nl = Scores.max;
+        for (a=nl-1;a>ni;a--){
+            Scores.Score[a] = Scores.Score[a-1];
+            Scores.Name[a] = Scores.Name[a-1];
+            Scores.Time[a] = Scores.Time[a-1];
+        }
+        Scores.Score[ni] = YourScore;
+        Scores.Time[ni] = Math.round(playtime/1000);
+        Scores.Name[ni] = YourName;
+        ScoresToTbl(Scores);
+        return true;
+    }
+    return false;
+}
+
+
+//----------------------------------------------------------------------------------
+// Function called from game on completion.  Log the score, detect high scores.
+//----------------------------------------------------------------------------------
+var done = false
+function FinalScore(score, TotalTime, bycategory, xtrabit)
+{
+    var scorestr = "sc="+score.toFixed(5);
+    YourScore = score;
+    playtime = TotalTime;
+    scorestr += ",tm="+TotalTime;
+    if (bycategory){
+        scorestr += ",ct=";
+        for (a=0;a<bycategory.length;a++){
+            if (a) scorestr += "/";
+            scorestr += bycategory[a].toFixed(1);
+
+        }
+    }
+    scorestr += ",ve="+xtrabit;
+    // Check if it goes in hall of fame.
+    if (!IsHigh(ScoresG, YourScore)){
+        IsHigh(ScoresL, score);
+    }
+
+    makeAjaxRequest("logscore.cgi?"+scorestr,scorestr);
+}
+
+//----------------------------------------------------------------------------------
+// Function called after name is entered.
+//----------------------------------------------------------------------------------
+function NameEntered()
+{
+    // Get the name, and put it in place.
+
+    YourName = document.bestf.yourname.value.substring(0,25);
+    YourName = YourName.replace("<","&lt;");
+    YourName = YourName.replace("&","&amp;");
+
+    if (YourName == "enter your name") YourName = "";
+    NamePromptVisible = false;
+
+    InsertHigh(ScoresG);
+    InsertHigh(ScoresL);
+
+    // Save local hiscores to cookie.
+    SetCookie("ScoresL",HsToString(ScoresL));
+
+    if (YourName != ""){    
+        // Submit the scores again now that the name is known.
+        var scorestr = "sc="+YourScore.toFixed(5)+",nm="+escape(YourName);
+        makeAjaxRequest("logscore.cgi?"+scorestr, scorestr);
+    }
+    return false;
+}
+
+var ScoresHistogram = [];
+function GetHsFile()
+{
+    var scrptE = document.createElement("script");
+    scrptE.setAttribute("type", "text/javascript");
+    scrptE.setAttribute("language", "JavaScript");
+    scrptE.setAttribute("src", "sc/bestscores");
+    var hdEl = document.getElementsByTagName("head")[0];
+    hdEl.appendChild(scrptE);
+}
+
+function sethsg(GblScoreStr)
+{
+    StringToHs(ScoresG, GblScoreStr);
+}
+function sethsg_10k(x) { };
+
+
+var ScoresG = new Object;
+var ScoresL = new Object;
+ScoresG.tbl = document.getElementById("StblG");
+ScoresL.tbl = document.getElementById("StblL");
+ScoresG.max = 10;
+ScoresL.max = 4;
+
+StringToHs(ScoresL, "");
+StringToHs(ScoresG, "");
+
+var YourScoreIndex = -1;
+var YourScore = 100;
+var YourName = "";
+var NamePromptVisible = false;
+
+
+GetHsFile();
+
+var sls = document.cookie.split("ScoresL=")[1];
+if (sls){
+    sls=sls.split(";")[0];
+    StringToHs(ScoresL, sls);
+}
+
+
+function SetCookie( name, val) 
+{
+    console.log("setcookie called");
+    var today = new Date();
+    var expires_date = new Date( today.getTime() + 1000*3600*24*90 );
+    document.cookie = name + "=" + val
+         +";expires=" + expires_date.toGMTString();
+}
+
+InitGame();
+</script>
